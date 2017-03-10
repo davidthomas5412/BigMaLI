@@ -22,8 +22,6 @@ class MassPrior(object):
         self.inv_cdf = interpolate.interp1d(cumsum, masses)
 
     def logpdf(self, mass):
-        if np.any(self.pdf(mass) <= 0):
-            print 'foo'
         return np.log(self.pdf(mass))
 
     def pdf(self, mass):
@@ -67,4 +65,4 @@ class TinkerPrior(object):
         return self.fetch(z).logpdf(mass)
 
     def rvs(self, z, size=1):
-        return self.fetch(z).inv_cdf(np.random.rand(size))
+        return self.fetch(z).rvs(size=size)
