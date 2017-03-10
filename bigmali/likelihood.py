@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.misc import logsumexp
+import pandas as pd
 
 
 class BiasedLikelihood(object):
@@ -39,3 +40,56 @@ class BiasedLikelihood(object):
             v5 = BiasedLikelihood.fast_log_lognorm(mu_mass, s_m, mass_samples)
             out += logsumexp(v1 + v2 + v3 - v4 - v5) - np.log(nsamples)
         return out
+
+    def single_integral(self, alpha1, alpha2, alpha3, alpha4, s, lum_obs, z, nsamples=100):
+        s_m = self.s_m_mult * s
+        snapz = self.grid.snap(z)
+        lum_samples = np.random.lognormal(mean=np.log(lum_obs), sigma=self.sigma_l,
+                                      size=nsamples)
+        mu_mass = alpha3 * (lum_samples / (np.exp(alpha1) * (1 + snapz) ** alpha4)) ** \
+                       (1 / alpha2)
+        mass_samples = np.maximum(np.minimum(np.random.lognormal(mean=np.log(mu_mass),
+                                                             sigma=s_m, size=nsamples),
+                                         self.prior.max_mass - 1),
+                              self.prior.min_mass + 1)
+        mu_lum = np.exp(alpha1) * ((mass_samples / alpha3) ** alpha2) * ((1 + snapz) ** (
+            alpha4))
+        v1 = BiasedLikelihood.fast_log_lognorm(lum_samples, self.sigma_l, lum_obs)
+        v2 = BiasedLikelihood.fast_log_lognorm(mu_lum, s, lum_samples)
+        v3 = self.prior.logpdf(mass_samples, snapz)
+        v4 = BiasedLikelihood.fast_log_lognorm(lum_obs, self.sigma_l, lum_samples)
+        v5 = BiasedLikelihood.fast_log_lognorm(mu_mass, s_m, mass_samples)
+        return logsumexp(v1 + v2 + v3 - v4 - v5) - np.log(nsamples)
+
+    def single_integral_samples_and_weights(self, alpha1, alpha2, alpha3, alpha4, s, lum_obs, z,
+                                  nsamples=100):
+        s_m = self.s_m_mult * s
+        snapz = self.grid.snap(z)
+        lum_samples = np.random.lognormal(mean=np.log(lum_obs), sigma=self.sigma_l,
+                                      size=nsamples)
+        mu_mass = alpha3 * (lum_samples / (np.exp(alpha1) * (1 + snapz) ** alpha4)) ** \
+                       (1 / alpha2)
+        mass_samples = np.maximum(np.minimum(np.random.lognormal(mean=np.log(mu_mass),
+                                                             sigma=s_m, size=nsamples),
+                                         self.prior.max_mass - 1),
+                              self.prior.min_mass + 1)
+        mu_lum = np.exp(alpha1) * ((mass_samples / alpha3) ** alpha2) * ((1 + snapz) ** (
+            alpha4))
+        v1 = BiasedLikelihood.fast_log_lognorm(lum_samples, self.sigma_l, lum_obs)
+        v2 = BiasedLikelihood.fast_log_lognorm(mu_lum, s, lum_samples)
+        v3 = self.prior.logpdf(mass_samples, snapz)
+        v4 = BiasedLikelihood.fast_log_lognorm(lum_obs, self.sigma_l, lum_samples)
+        v5 = BiasedLikelihood.fast_log_lognorm(mu_mass, s_m, mass_samples)
+        out = logsumexp(v1 + v2 + v3 - v4 - v5) - np.log(nsamples)
+        df = pd.DataFrame()
+        df['lum_samples'] = lum_samples
+        df['mu_mass'] = mu_mass
+        df['mass_samples'] = mass_samples
+        df['mu_lum'] = mu_lum
+        df['v1'] = v1
+        df['v2'] = v2
+        df['v3'] = v3
+        df['v4'] = v4
+        df['v5'] = v5
+        df['out'] = [out] * len(v1)
+        return df
