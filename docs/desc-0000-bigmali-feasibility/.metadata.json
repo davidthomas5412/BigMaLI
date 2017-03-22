@@ -1,0 +1,12 @@
+{
+    "author": "David Thomas",
+    "affiliation": "KIPAC, Stanford University",
+    "email": "dthomas5@stanford.edu",
+    "title": "Inference of the Conditional Luminosity Function by Explicit Marginalization over All Individual Galaxy Parameters",
+    "description": "We explore a hierarchical model for galaxy luminosities and halo masses whose hyperparameters govern the conditional luminosity function, and whose many individual object parameters are explicitly marginzlied over. We investigate importance sampling, and comment on its performance.",
+    "repo_name": "BigMaLI",
+    "serial_number": "0000",
+    "short_title": "feasibility",
+    "folder_name": "desc-0000-bigmali-feasibility",
+    "default_format": "tex"
+}
