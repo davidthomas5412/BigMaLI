@@ -12,7 +12,6 @@
 *.blg
 *.bbl
 *Notes.bib
-main.pdf
 main.tar.gz
 
 ### other files produced during compilation
